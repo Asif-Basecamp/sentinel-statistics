@@ -1,0 +1,54 @@
+@import "../../../assets/scss/variables.scss";
+
+.footer{
+    background: #011B38;
+    box-shadow:inset 0 5px 99px rgba(#000000, 0.36);
+    background-image: url('../../../assets/images/foter-bg.png');
+    background-repeat: no-repeat;
+    .footer-inner{
+        padding:30px 20px 50px;
+        .footer-left{
+            .logo-footer{
+                width: 190px;
+            }
+            ul{
+                display: flex;
+                align-items: center;
+                list-style-type: none;
+                padding-left: 0;
+                margin-top: 10px;
+                li{
+                    padding: 5px 15px;
+                    .icon{
+                        fill: $white;
+                        width: 20px;
+                        transition: all ease-in 0.8;
+                        &:hover{
+                            opacity: 0.7;
+                        }
+                    }
+                    &:first-child{
+                        padding-left: 0;
+                    }
+                }
+            }
+        }
+        .footer-right{
+            label{
+                color: $text-color-secondary;
+            }
+            ul{
+                list-style-type: none;
+                padding-left: 0;
+                font-size: $font-size-base;
+                margin-bottom: 0;
+                li{
+                    padding: 6px 0;
+                    a{
+                        color: $white;
+                    }
+                }
+            }
+        }
+    }
+}

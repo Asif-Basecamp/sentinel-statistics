@@ -1,0 +1,114 @@
+@import "../../../assets/scss/variables.scss";
+
+
+body.sidebar-open{
+    .sidebar-backdrop{
+        position: fixed;
+        z-index: 990;
+        content: "";
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba($color: #000000, $alpha: 0.2);
+    }
+}
+
+.main-header{
+    .header-top{
+        position: relative;
+        background: rgba($black, 0.1);
+        &:after{
+            position: absolute;
+            width: 100%;
+            height: 1px;
+            display: block;
+            background: rgb(255,255,255);
+            background: linear-gradient(201deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.5) 48%, rgba(255,255,255,0.0984768907563025) 100%);
+            bottom: 0;
+            content: '';
+        }
+        .header-top-inner{
+            align-items: center;
+            display: flex;
+            justify-content: space-between;
+            .header-left{
+                @media screen and (max-width: 480px) {
+                    font-size: $font-size-sm - 1;
+                }
+            }
+            .header-right{
+                display: flex;
+                align-items: center;
+                ul{
+                    list-style-type: none;
+                    display: flex;
+                    align-items: center;
+                    margin-bottom: 0;
+                    @media screen and (max-width: 480px) {
+                        padding-left: 0;
+                        padding-right: 8px;
+                    }
+                    li{
+                        padding: 0 10px;
+                        @media screen and (max-width: 767px) {
+                            padding: 0 5px;
+                        }
+                        .icon{
+                            fill: $white;
+                            @media screen and (max-width: 480px) {
+                                width: 12px;
+                            }
+                        }
+                    }
+                }
+                .ant-btn{
+                    background: $primary-color;
+                    color: $white;
+                    height: 40px;
+                    line-height: 40px;
+                    padding: 0 15px;
+                    border-radius: 0;
+                    @media screen and (max-width: 767px) {
+                        font-size: $font-size-sm - 1;
+                        padding: 0 10px;
+                    }
+                }
+            }
+        }
+    }
+    .header-bottom{
+        .header-bottom-inner{
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px 0;
+            .header-logo{
+                .icon{
+                    width: 185px;
+                    @media screen and (max-width: 480px) {
+                        width: 125px;
+                    }
+                }
+            }
+            .data-center{
+                background: rgba($black, 0.5);
+                padding: 6px 12px;
+                border-radius: 20px;
+                display: flex;
+                align-items: center;
+                @media screen and (max-width: 480px) {
+                    font-size: $font-size-sm;
+                }
+                .icon{
+                    fill: $white;
+                    width: 20px;
+                    margin-right: 6px;
+                    @media screen and (max-width: 480px) {
+                        width: 14px;
+                    }
+                }
+            }
+        }
+    }
+}
