@@ -43,6 +43,13 @@
     }
     .ant-tabs{
         margin-top: -100px;
+        .ant-tabs-nav-operations{
+            background: $primary-color;
+            svg{
+                fill: #fff;
+                width: 30px;
+            }
+        }
         .ant-tabs-ink-bar{
             background: $primary-color;
             top: 0;
@@ -54,13 +61,13 @@
                 width: 100%;
                 justify-content: space-between;
                 .ant-tabs-tab{
-                    width: 25%;
                     text-align: center;
                     display: block;
                     color: #6983A9;
                     text-transform: uppercase;
                     font-weight: 600;
-                    padding: 18px 0;
+                    padding: 18px 30px;
+                    margin: 0;
                     &.ant-tabs-tab-active{
                         .ant-tabs-tab-btn{
                             color: $white;
