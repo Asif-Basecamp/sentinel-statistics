@@ -1,6 +1,5 @@
 import React from 'react';
 import { BrowserRouter as Router, Route } from "react-router-dom";
-import 'aos/dist/aos.css';
 import SvgSprite from "./utility/SvgSpriteLoader";
 //App routes
 import routes from "./routes";

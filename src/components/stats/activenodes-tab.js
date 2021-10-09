@@ -1,9 +1,11 @@
 import React, { Component } from 'react';
-import { Radio } from 'antd';
+import { Radio, Spin } from 'antd';
+import axios from 'axios';
 import Highcharts from "highcharts";
 import HighchartsReact from "highcharts-react-official";
 
-const options = {
+
+let options = {
     chart: {
         type: "area",
         backgroundColor: null,
@@ -51,232 +53,115 @@ const options = {
         gridLineColor: "#2B5072",
         title: {
             enabled: false,
+            text:'Active Nodes'
         },
     },
     xAxis: {
-        categories: ["JAN", 'JAN', 'JAN', "JAN", 'JAN', 'JAN', "JAN", 'JAN', 'JAN', "JAN", 'JAN', 'JAN', "JAN", 'JAN', 'JAN'],
-        lineColor: "transparent",
+        type: "category",
         labels: {
             style: {
-                fontSize: "8",
+                fontSize: "10",
                 fontWeight: "300",
-                color: "#696969",
-            },
+                color: "#b7b3b3",
+            }
         },
     },
     series: [
         {
-            data: [50, 80, 100, 200, 500, 400, 100, 200, 80, 500, 650, 700, 500, 400, 600],
-        },
+            data: null,
+        }
     ],
+    
 };
-
-
-const optionsDataConsumed = {
-    chart: {
-        type: 'column',
-        backgroundColor: null,
-        height: 420,
-    },
-    credits: {
-        enabled: false,
-    },
-    title: {
-        text: null,
-    },
-    legend: {
-        enabled: false,
-    },
-    tooltip: {
-        formatter: function () {
-            return this.y;
-        },
-        backgroundColor: '#00CE7D',
-        borderColor: 'black',
-        borderRadius: 0,
-        borderWidth: 0
-    },
-    plotOptions: {
-        series: {
-            stacking: 'normal',
-            borderWidth: 0,
-        },
-    },
-    yAxis: {
-        gridLineColor: '#2B5072',
-        title: {
-            enabled: false,
-        },
-    },
-    xAxis: {
-        categories: ["JAN", 'JAN', 'JAN', "JAN", 'JAN', 'JAN', "JAN", 'JAN', 'JAN', "JAN", 'JAN', 'JAN', "JAN", 'JAN', 'JAN'],
-        lineColor: "transparent",
-        labels: {
-            style: {
-                fontSize: "8",
-                fontWeight: "300",
-                color: "#696969",
-            },
-        },
-    },
-    series: [
-        {
-            name: '',
-            data: [
-                { x: 1, y: 4, color: '#165686' },
-                { x: 2, y: 3, color: '#165686' },
-                { x: 3, y: 8, color: '#165686' },
-                { x: 4, y: 4, color: '#165686' },
-                { x: 5, y: 6, color: '#165686' },
-                { x: 6, y: 9, color: '#165686' },
-                { x: 7, y: 7, color: '#165686' },
-                { x: 8, y: 25, color: '#165686' },
-                { x: 9, y: 20, color: '#165686' },
-                { x: 10, y: 22, color: '#165686' },
-                { x: 11, y: 10, color: '#165686' },
-                { x: 12, y: 8, color: '#165686' },
-                { x: 13, y: 21, color: '#165686' },
-                { x: 14, y: 35, color: '#165686' },
-                { x: 15, y: 44, color: '#165686' },
-                { x: 16, y: 70, color: '#165686' },
-                { x: 17, y: 60, color: '#165686' },
-                { x: 18, y: 55, color: '#165686' },
-                { x: 19, y: 20, color: '#165686' },
-                { x: 20, y: 5, color: '#165686' },
-                { x: 21, y: 23, color: '#165686' },
-                { x: 22, y: 20, color: '#165686' },
-                { x: 23, y: 70, color: '#165686' },
-                { x: 24, y: 65, color: '#165686' },
-                { x: 25, y: 55, color: '#165686' },
-                { x: 26, y: 30, color: '#165686' },
-                { x: 27, y: 15, color: '#165686' },
-                { x: 28, y: 40, color: '#165686' },
-                { x: 29, y: 55, color: '#165686' },
-                { x: 30, y: 65, color: '#165686' },
-            ],
-        },
-    ],
-};
-
 class ActiveNodesTab extends Component {
+    state = {
+        data: [],
+        loading: false,
+    };
+
+    getActiveNode = async (timeframe) => {
+        if(timeframe == null){
+            timeframe = '24h'
+        }
+        this.setState({
+          loading: true
+        });
+
+        axios
+            .get(`${process.env.REACT_APP_BASE_URL_LIVE}/nodes/active?duration=${timeframe}`)
+            .then(({ data }) => {
+                console.log(data)
+                let newData = [],
+                    date = null,
+                    formattedDate = null;
+
+                for (let i = 0; i < data.length; i++) {
+                    date = new Date(data[i].timestamp);
+                    formattedDate =  date.toString().split(' ')[2] + " " +date.toString().split(' ')[1] + " " + + date.toString().split(' ')[3];
+                    console.log(data[i].timestamp)
+                    console.log(date.toString())
+                    newData.push({
+                        name: formattedDate,
+                        x: i,
+                        y: data[i].nodes
+                    });
+                }
+                options.series[0].data = newData;
+                this.setState({ data: newData, loading: false });
+            })
+            .catch(err => {
+                console.log(err);   
+                this.setState({
+                    data: null,
+                    loading: false
+                });
+            })
+        
+        console.log(this.state.data)
+    };
+    componentDidMount() {
+        this.getActiveNode();
+    }
     render() {
+        const { loading, data } = this.state;
+        
         return (
-            <React.Fragment>
-                <div className="statschart-card">
-                    <div className="statschart-card-inner">
-                        <div className="stats-chart">
-                            <div className="chart-head">
-                                <h3>ACTIVE NODES</h3>
-                                <Radio.Group defaultValue="a" buttonStyle="solid">
-                                    <Radio.Button value="a">daily</Radio.Button>
-                                    <Radio.Button value="b">weekly</Radio.Button>
-                                    <Radio.Button value="c">monthly</Radio.Button>
-                                </Radio.Group>
-                            </div>
-                            <HighchartsReact
-                                highcharts={Highcharts}
-                                options={options}
-                            />
+            <div className="statschart-card" id={this.props.id} ref={this.props.refrence}>
+                <div className="statschart-card-inner">
+                    <div className="stats-chart">
+                        <div className="chart-head">
+                            <h3>ACTIVE NODES</h3>
+                            <Radio.Group defaultValue="a" buttonStyle="solid">
+                                <Radio.Button onClick={()=>{this.getActiveNode("24h")}} value="a">daily</Radio.Button>
+                                <Radio.Button onClick={()=>{this.getActiveNode("168h")}} value="b">weekly</Radio.Button>
+                                <Radio.Button onClick={()=>{this.getActiveNode("720h")}} value="c">monthly</Radio.Button>
+                            </Radio.Group>
                         </div>
-                        <div className="stats-count">
-                            <div className="count-card">
-                                <h1>597</h1>
-                                <p>Active Nodes Right Now</p>
-                            </div>
-                            <div className="count-card">
-                                <h1>124</h1>
-                                <p>Average Active Nodes</p>
-                            </div>
+                        <div className={data===null ? "chart-wrap no-date": "chart-wrap"}>
+                            <Spin spinning={loading} />
+                            {!data && 
+                                <div className="no-date">No data available</div>
+                            }
+                            {(!loading && data) &&
+                                <HighchartsReact
+                                    highcharts={Highcharts}
+                                    options={options}
+                                />
+                            }
+                        </div>  
+                    </div>
+                    <div className="stats-count">
+                        <div className="count-card">
+                            <h4>597</h4>
+                            <p>Active Nodes Right Now</p>
+                        </div>
+                        <div className="count-card">
+                            <h4>124</h4>
+                            <p>Average Active Nodes</p>
                         </div>
                     </div>
                 </div>
-
-                <div className="statschart-card">
-                    <div className="statschart-card-inner">
-                        <div className="stats-chart">
-                            <div className="chart-head">
-                                <h3>sessions </h3>
-                                <Radio.Group defaultValue="a" buttonStyle="solid">
-                                    <Radio.Button value="a">daily</Radio.Button>
-                                    <Radio.Button value="b">weekly</Radio.Button>
-                                    <Radio.Button value="c">monthly</Radio.Button>
-                                </Radio.Group>
-                            </div>
-                            <HighchartsReact
-                                highcharts={Highcharts}
-                                options={options}
-                            />
-                        </div>
-                        <div className="stats-count">
-                            <div className="count-card">
-                                <h1>1811</h1>
-                                <p>Active Sessions</p>
-                            </div>
-                            <div className="count-card">
-                                <h1>10643</h1>
-                                <p>Average Sessions</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="statschart-card">
-                    <div className="statschart-card-inner">
-                        <div className="stats-chart">
-                            <div className="chart-head">
-                                <h3>data consumed</h3>
-                                <Radio.Group defaultValue="a" buttonStyle="solid">
-                                    <Radio.Button value="a">daily</Radio.Button>
-                                    <Radio.Button value="b">weekly</Radio.Button>
-                                    <Radio.Button value="c">monthly</Radio.Button>
-                                </Radio.Group>
-                            </div>
-                            <HighchartsReact
-                                highcharts={Highcharts}
-                                options={optionsDataConsumed} />
-                        </div>
-                        <div className="stats-count">
-                            <div className="count-card">
-                                <h1>5007</h1>
-                                <p>Data (GB/24hr)</p>
-                            </div>
-                            <div className="count-card">
-                                <h1>1273</h1>
-                                <p>Total Data Consumed (TB)</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="statschart-card">
-                    <div className="statschart-card-inner">
-                        <div className="stats-chart">
-                            <div className="chart-head">
-                                <h3>Average Session Duration</h3>
-                                <Radio.Group defaultValue="a" buttonStyle="solid">
-                                    <Radio.Button value="a">daily</Radio.Button>
-                                    <Radio.Button value="b">weekly</Radio.Button>
-                                    <Radio.Button value="c">monthly</Radio.Button>
-                                </Radio.Group>
-                            </div>
-                            <HighchartsReact
-                                highcharts={Highcharts}
-                                options={options}
-                            />
-                        </div>
-                        <div className="stats-count">
-                            <div className="count-card">
-                                <h1>56.12</h1>
-                                <p>Lifetime Avg. Duration (min)</p>
-                            </div>
-                            <div className="count-card">
-                                <h1>40.40</h1>
-                                <p>24Hr. Avg. Duration (min)</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </React.Fragment>
+            </div>
         )
     }
 }

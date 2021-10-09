@@ -25,7 +25,7 @@
 .stats-section{
     background: $background-secondary;
     position: relative;
-    padding-bottom: 40px;
+    padding-bottom: 150px;
     &:before{
         content: ' ';
         width: 100%;
@@ -36,6 +36,11 @@
         top: -300px;
         background-repeat: no-repeat;
         background-position-x: right;
+        z-index: 0;
+    }
+    & > .container{
+        position: relative;
+        z-index: 1;
     }
     .stats-path{
         width: 100%;
@@ -43,6 +48,14 @@
     }
     .ant-tabs{
         margin-top: -100px;
+        position: sticky;
+        top: 0;
+        margin-bottom: 16px;
+        background: #142D51;
+        z-index: 10;
+        & .ant-tabs-nav{
+            margin-bottom: 0;
+        }
         .ant-tabs-nav-operations{
             background: $primary-color;
             svg{
@@ -77,10 +90,59 @@
             }
         }
     }
+    .scroll-tab{
+        margin-top: -100px;
+        position: sticky;
+        top: 0;
+        margin-bottom: 16px;
+        background: #142D51;
+        z-index: 10;
+        list-style: none;
+        display: flex;
+        flex-direction: row;
+        max-width: 100%;
+        overflow: auto;
+        padding: 0;
+        margin: 0 0 16px;
+        justify-content: space-between;
+        & li{
+            & a{
+                position: relative;
+                text-align: center;
+                display: block;
+                color: #6983A9;
+                text-transform: uppercase;
+                font-weight: 600;
+                padding: 18px 30px;
+                margin: 0;
+                white-space: nowrap;
+                &.active{
+                    color: #fff;
+                    &:before{
+                        content: "";
+                        background-color: $primary-color;
+                        display: block;
+                        width: 100%;
+                        height: 3px;
+                        position: absolute;
+                        top: 0;
+                        left: 0;
+                    }
+                }
+            }
+        }
+    }
     .statschart-card{
         background: #142D51;
         padding: 20px 30px 20px 20px;
         margin-bottom: 35px;
+        .no-date{
+            display: flex;
+            justify-self: stretch;
+            align-self: center;
+            justify-content: center;
+            align-self: center;
+        }
         .statschart-card-inner{
             display: flex;
             align-items: flex-end;
@@ -119,14 +181,34 @@
                         }
                     }
                 }
+                .chart-wrap{
+                    min-height: 420px;
+                    position: relative;
+                    &.no-date{
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                    }
+                    // width: 100%;
+                    & .ant-spin.ant-spin-spinning{
+                        position: absolute;
+                        width: 100%;
+                        height: 100%;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        background-color: rgba(255,255,255, .1);
+                    }
+                }
             }
             .stats-count{
+                min-width: 215px;
                 .count-card{
                     background: #0D2240;
                     text-align: center;
                     padding: 15px 20px;
                     margin-top: 25px;
-                    h1{
+                    h4{
                         color: $white;
                         margin-bottom: 5px;
                         font-size: 2.2rem;
