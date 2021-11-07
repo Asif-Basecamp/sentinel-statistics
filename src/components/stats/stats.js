@@ -35,7 +35,6 @@ const StatsView = () => {
           .then(function(response) {
             setData(response.data);
             setLoading(false)
-            console.log(response.data)
           }).catch(function(error) {
             console.log(error);
           })

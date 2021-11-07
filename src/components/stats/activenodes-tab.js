@@ -51,19 +51,31 @@ let options = {
                 enabled: false,
             },
         },
+        series: {
+            stacking: 'normal',
+            borderWidth: 0,
+        },
     },
     yAxis: {
-        gridLineColor: "#2B5072",
+        gridLineColor: "#fff",
         title: {
             enabled: false,
-            text:'Active Nodes'
+            text:'Active Nodes',
+        },
+        labels: {
+            style: {
+                fontSize: "10px",
+                fontWeight: "300",
+                color: "#b7b3b3",
+            }
         },
     },
     xAxis: {
         type: "category",
+        lineColor: "transparent",
         labels: {
             style: {
-                fontSize: "10",
+                fontSize: "10px",
                 fontWeight: "300",
                 color: "#b7b3b3",
             }
@@ -82,6 +94,7 @@ class ActiveNodesTab extends Component {
         data: [],
         activeNode:null,
         averageNode:null,
+        chartType:"area",
         loading: true,
     };
     arryaTotal = (accumulator, a)=>{
@@ -110,6 +123,7 @@ class ActiveNodesTab extends Component {
         }
         return i + "th";
     }
+    
     getActiveNode = () =>{
         let preData = this.props.data.count,
             nodeData = null;
@@ -149,12 +163,13 @@ class ActiveNodesTab extends Component {
             newData.push({
                 name: formattedDate,
                 x: i,
-                y: nodeData[i]
+                y: nodeData[i],
+                color: '#165686'
             });
         }
         options.series[0].data = newData;
         options.tooltip.formatter = function () {
-            return 'Data: '+ this.key + '<br /> Active Nodes: '+ this.y;
+            return 'Date: '+ this.key + '<br /> Active Nodes: '+ this.y;
         };
         this.setState({ data: newData}, ()=>{
             this.setState({
@@ -167,8 +182,6 @@ class ActiveNodesTab extends Component {
         this.setState({loading: true});
 
         let preData = this.props.data.count,
-            date = null,
-            formattedDate = null,
             newData=[],
             monthData=[],
             nodeData = Object.keys(preData).map(function(key) {
@@ -178,13 +191,13 @@ class ActiveNodesTab extends Component {
         for (let i = 0; i < Object.keys(preData).length; i++) {
             monthData.push({    
                 date: Object.keys(preData)[i],
-                data:nodeData[i]
+                data:nodeData[i],
+                color: '#165686'
             });
         }
 
         const groupsByWeek = monthData.reduce((acc, date) => {
             // create a composed key: 'year-week' 
-            // const yearWeek = `${moment(date.date).isoWeek()}`;
             const yearWeek = `${moment(date.date).year()}-${moment(date.date).week()}`;
             // add this key as a property to the result object
             if (!acc[yearWeek]) {
@@ -207,24 +220,12 @@ class ActiveNodesTab extends Component {
             newData.push({
                 name: this.ordinal_suffix_of(weekValue[1])+ ' week ' + weekValue[0],
                 x: i,
-                y: data
+                y: data,
+                color: '#165686'
             });
         }
-        console.log(weekArray)
-        console.log(newData)
-        // for (let i = 0; i < finalData.length; i++) {
-        
-        //     newData.push({
-        //         name: finalData[i].date,
-        //         x: i,
-        //         y: finalData[i].data
-        //     });
-        // }
         options.series[0].data = newData;
-        // options.chart.type = "column";
         options.tooltip.formatter = function () {
-            // var weekValue = this.key .split('-');
-            // return weekValue[1]+ ' week ' + weekValue[0] + '<br /> Active Nodes: ' + this.y;
             return this.key + '<br /> Active Nodes: ' + this.y;
         };
         this.setState({ data: newData}, ()=>{
@@ -232,9 +233,6 @@ class ActiveNodesTab extends Component {
                 loading: false
             })
         });
-        // this.setState({
-        //     loading: false
-        // })
     }
     
     getMonthlyNode = () =>{
@@ -303,17 +301,17 @@ class ActiveNodesTab extends Component {
         let finalData = entryGroups
             .map(({ to, data }) => ({
                 date: to.format("MMMM YYYY"),
-                data: data
+                data: data,
             }))
         for (let i = 0; i < finalData.length; i++) {
             newData.push({
                 name: finalData[i].date,
                 x: i,
-                y: finalData[i].data
+                y: finalData[i].data,
+                color: '#165686'
             });
         }
         options.series[0].data = newData;
-        // options.chart.type = "column";
         options.tooltip.formatter = function () {
             return 'Month: '+ this.key + '<br /> Active Nodes: ' + this.y;
         };
@@ -325,9 +323,12 @@ class ActiveNodesTab extends Component {
     }
 
     chartViewToggle = (view) =>{
-        this.setState({loading: true}, ()=>{
-            options.chart.type = view;
+        
+        this.setState({
+            loading: true,
+            chartType:view,
         });
+        options.chart.type = view;
         setTimeout(function(){
             this.setState({loading: false});
             }.bind(this),10
@@ -340,7 +341,7 @@ class ActiveNodesTab extends Component {
         this.getAvarageNode();
     }
     render() {
-        const { loading, data, activeNode, averageNode } = this.state;
+        const { loading, data, activeNode, averageNode, chartType } = this.state;
         
         return (
             <div className="statschart-card" id={this.props.id} ref={this.props.refrence}>
@@ -348,11 +349,6 @@ class ActiveNodesTab extends Component {
                     <div className="stats-chart">
                         <div className="chart-head">
                             <h3>ACTIVE NODES</h3>
-                            <Radio.Group defaultValue="line" buttonStyle="solid">
-                                <Radio.Button onClick={()=>{this.chartViewToggle("area")}} value="line"><SvgIcon fill="#fff" name="line-chart" viewbox="0 0 512 512" /></Radio.Button>
-                                <Radio.Button onClick={()=>{this.chartViewToggle("column")}} value="bar"><SvgIcon fill="#fff" name="bar-chart" viewbox="0 0 24 24" /></Radio.Button>
-                            </Radio.Group>
-
                             <Radio.Group defaultValue="daily" buttonStyle="solid">
                                 <Radio.Button onClick={this.getDailyNode} value="daily">daily</Radio.Button>
                                 <Radio.Button onClick={this.getWeeklyNode} value="weekly">weekly</Radio.Button>
@@ -365,10 +361,16 @@ class ActiveNodesTab extends Component {
                                 <div className="no-date">No data available</div>
                             }
                             {(!loading && data) &&
-                                <HighchartsReact
-                                    highcharts={Highcharts}
-                                    options={options}
-                                />
+                                <>
+                                    <Radio.Group defaultValue={chartType} className="ml-auto" buttonStyle="solid" size="small">
+                                        <Radio.Button onClick={()=>{this.chartViewToggle("area")}} value="area"><SvgIcon fill="#fff" name="line-chart" viewbox="0 0 512 512" /></Radio.Button>
+                                        <Radio.Button onClick={()=>{this.chartViewToggle("column")}} value="column"><SvgIcon fill="#fff" name="bar-chart" viewbox="0 0 24 24" /></Radio.Button>
+                                    </Radio.Group>
+                                    <HighchartsReact
+                                        highcharts={Highcharts}
+                                        options={options}
+                                    />
+                                </>
                             }
                         </div>  
                     </div>

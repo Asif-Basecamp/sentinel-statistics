@@ -171,6 +171,12 @@
                             text-transform: uppercase;
                             font-weight: 600;
                             border-color: #005D80;
+                            display: inline-flex;
+                            align-items: center;
+                            & span:last-of-type{
+                                display: inline-flex;
+                                align-items: center;
+                            }
                             &:before{
                                 background: #005D80;
                             }
@@ -184,6 +190,9 @@
                 .chart-wrap{
                     min-height: 420px;
                     position: relative;
+                    display: flex;
+                    flex-direction: column;
+                    width: 100%;
                     &.no-date{
                         display: flex;
                         align-items: center;
@@ -198,6 +207,28 @@
                         align-items: center;
                         justify-content: center;
                         background-color: rgba(255,255,255, .1);
+                    }
+                    & .ant-radio-group{
+                        & .ant-radio-button-wrapper{
+                            background: #0D2240;
+                            color: #6983A9;
+                            text-transform: uppercase;
+                            font-weight: 600;
+                            border-color: #005D80;
+                            display: inline-flex;
+                            align-items: center;
+                            & span:last-of-type{
+                                display: inline-flex;
+                                align-items: center;
+                            }
+                            &:before{
+                                background: #005D80;
+                            }
+                            &.ant-radio-button-wrapper-checked{
+                                background: #0764A3;
+                                color: $white;
+                            }
+                        }
                     }
                 }
             }

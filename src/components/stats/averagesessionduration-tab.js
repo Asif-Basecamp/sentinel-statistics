@@ -1,10 +1,16 @@
 import React, { Component } from 'react';
 import { Radio, Spin } from 'antd';
-import axios from 'axios';
+import { extendMoment } from 'moment-range';
+import { SvgIcon } from '../common';
 import Highcharts from "highcharts";
 import HighchartsReact from "highcharts-react-official";
 
-const options = {
+const Moment = require('moment');
+const moment = extendMoment(Moment);
+
+let ms = 10000000,
+    mn = (ms / 60000000000).toFixed(1);
+let options = {
     chart: {
         type: "area",
         backgroundColor: null,
@@ -47,19 +53,39 @@ const options = {
                 enabled: false,
             },
         },
+        series: {
+            stacking: 'normal',
+            borderWidth: 0,
+        },
     },
     yAxis: {
-        gridLineColor: "#2B5072",
+        gridLineColor: "#fff",
         title: {
             enabled: false,
-            text:'Active Nodes'
+            text:'Active Sessions',
+        },
+        labels: {
+            style: {
+                fontSize: "10px",
+                fontWeight: "300",
+                color: "#b7b3b3",
+            },
+            formatter: function () {
+                var maxElement = this.axis.max;
+                 if (maxElement > mn) {
+                    return (this.value / 60000000000).toFixed(0) + " Min";
+                }else {
+                    return (this.value) + " ms";
+                }
+            },
         },
     },
     xAxis: {
         type: "category",
+        lineColor: "transparent",
         labels: {
             style: {
-                fontSize: "8",
+                fontSize: "10px",
                 fontWeight: "300",
                 color: "#b7b3b3",
             }
@@ -67,94 +93,318 @@ const options = {
     },
     series: [
         {
-            data: [],
-        },
+            showInLegend: false,   
+            data: null,
+        }
     ],
+    
 };
-
 class AverageSessionDurationTab extends Component {
     state = {
         data: [],
-        loading: false,
-        error: null
+        activeSessionDuration:null,
+        averageSessionDuration:null,
+        chartType:"area",
+        loading: true,
     };
-
-    getActiveNode = async (timeframe) => {
-        if(timeframe == null){
-            timeframe = '24h'
+    arryaTotal = (accumulator, a)=>{
+        return accumulator + a;
+    }
+    sum=( obj )=> {
+        let sum = 0;
+        for( var el in obj ) {
+            if( obj.hasOwnProperty( el ) ) {
+            sum += parseFloat( obj[el] );
+            }
         }
-        this.setState({
-          loading: true
+        return sum;
+    }
+    ordinal_suffix_of = (i)=> {
+        var j = i % 10,
+            k = i % 100;
+        if (j === 1 && k !== 11) {
+            return i + "st";
+        }
+        if (j === 2 && k !== 12) {
+            return i + "nd";
+        }
+        if (j === 3 && k !== 13) {
+            return i + "rd";
+        }
+        return i + "th";
+    }
+    formatTime(ms, showType=true) {
+        let seconds = (ms / 1000).toFixed(0);
+        let minutes = (ms / 60000000000).toFixed(0);
+
+        if(showType){
+            if (seconds < 60) return seconds + " Sec";
+            else return minutes + " Min";
+        }else{
+            if (seconds < 60) return seconds;
+            else return minutes;
+        }
+        
+    }
+    getActiveSessions = () =>{
+        let preData = this.props.data.count,
+            nodeData = null;
+
+        nodeData = Object.keys(preData).map(function(key) {
+            return preData[key];
         });
 
-        axios
-            .get(`${process.env.REACT_APP_BASE_URL_LIVE}/sessions/length?duration=${timeframe}`)
-            .then(({ data }) => {
-                console.log(data)
-                let newData = [],
-                    date = null,
-                    formattedDate = null;
+        this.setState({ activeSessionDuration:nodeData[Object.keys(preData).length - 1] });
+    }
 
-                for (let i = 0; i < data.length; i++) {
-                    date = new Date(data[i].timestamp);
-                    formattedDate =  date.toString().split(' ')[2] + " " +date.toString().split(' ')[1] + " " + + date.toString().split(' ')[3];
-                    newData.push({
-                        name: formattedDate,
-                        x: i,
-                        y: Math.round((~~(data[i].duration % 3600) / 60) * 100) / 100
-                    });
-                }
-                options.series[0].data = newData;
-                this.setState({ data: newData, loading: false});
-            })
-            .catch(err => {
-                console.log(err);  
-                this.setState({
-                    error: err,
-                    loading: false
-                }); 
-            })
+    getAvarageDuration = () =>{
+        let preData = this.props.data.count,
+            avarageNode = null;
         
-        console.log(this.state.data)
+        avarageNode =(this.sum(preData)/ Object.keys(preData).length).toFixed(0);
+        this.setState({ averageSessionDuration:avarageNode });
+    }
+
+    getDailySessionDuration = () => {
+        this.setState({
+            loading: true
+        })
+        let newData = [],
+            preData = this.props.data.count,
+            date = null,
+            formattedDate = null,
+            nodeData = Object.keys(preData).map(function(key) {
+                return preData[key];
+            });
+
+        for (let i = 0; i < Object.keys(preData).length; i++) {
+            
+            date = new Date(Object.keys(preData)[i]);
+            formattedDate =  moment(date).format('Do MMM YY');
+            newData.push({
+                name: formattedDate,
+                x: i,
+                y: nodeData[i],
+                color: '#165686'
+            });
+        }
+        let that = this;
+        options.series[0].data = newData;
+        options.tooltip.formatter = function () {
+            return 'Date: '+ this.key + '<br /> Session Duration: '+ that.formatTime(this.y, false) + " Minutes";
+        };
+        this.setState({ data: newData}, ()=>{
+            this.setState({
+                loading: false
+            })
+        });
     };
+
+    getWeeklySessionDuraion = () =>{
+        this.setState({loading: true});
+
+        let preData = this.props.data.count,
+            newData=[],
+            monthData=[],
+            nodeData = Object.keys(preData).map(function(key) {
+                return preData[key];
+            });
+        
+        for (let i = 0; i < Object.keys(preData).length; i++) {
+            monthData.push({    
+                date: Object.keys(preData)[i],
+                data:nodeData[i],
+                color: '#165686'
+            });
+        }
+
+        const groupsByWeek = monthData.reduce((acc, date) => {
+            // create a composed key: 'year-week' 
+            const yearWeek = `${moment(date.date).year()}-${moment(date.date).week()}`;
+            // add this key as a property to the result object
+            if (!acc[yearWeek]) {
+                acc[yearWeek] = [];
+            }
+            // push the current date that belongs to the year-week calculated before
+            acc[yearWeek].push(date);
+            
+            return acc;
+        
+        }, {});
+
+        let weekArray = Object.values(groupsByWeek);
+
+        for (let i= 0; i< weekArray.length; i++ ){
+            var data = weekArray[i].reduce(function(prev, cur) {
+                return prev + cur.data;
+                }, 0);
+            var weekValue = Object.keys(groupsByWeek)[i].split('-');
+            newData.push({
+                name: this.ordinal_suffix_of(weekValue[1])+ ' week ' + weekValue[0],
+                x: i,
+                y: data,
+                color: '#165686'
+            });
+        }
+        let that = this;
+        options.series[0].data = newData;
+        options.tooltip.formatter = function () {
+            return this.key + '<br /> Session Duration: ' + that.formatTime(this.y, false) + " Minutes";
+        };
+        this.setState({ data: newData}, ()=>{
+            this.setState({
+                loading: false
+            })
+        });
+    }
+    
+    getMonthlySessionDuration = () =>{
+        this.setState({loading: true});
+
+        let preData = this.props.data.count,
+            date = null,
+            formattedDate = null,
+            newData=[],
+            monthData=[],
+            nodeData = Object.keys(preData).map(function(key) {
+                return preData[key];
+            });
+        
+        for (let i = 0; i < Object.keys(preData).length; i++) {
+            date = new Date(Object.keys(preData)[i]);
+            formattedDate =  moment(date).format('Do MMM YY');
+            monthData.push({
+                date: formattedDate,
+                data:nodeData[i]
+            });
+        }
+
+        // 2: Define models
+        const DateEntry = ({ date, data }) => ({
+            date: moment(date, "Do MMM YY"),
+            data: data
+        });
+
+        const EntryRange = ( dateEntries ) => {
+            const dates = dateEntries.map(d => d.date);
+            const data = dateEntries.map(d => d.data).reduce(this.arryaTotal, 0);
+            const from = moment.min(dates);
+            const to = moment.max(dates);
+            return {
+                dates,
+                data,
+                from,
+                to
+            }
+        };
+        
+        EntryRange.sorter = (r1, r2) => r1.from.isBefore(r2.from) ? -1 : 1;
+        // Utils
+        const groupBy=(getKey, items)=>{
+            return items.reduce(
+            (groups, item) => {
+                const k = getKey(item);
+                if (!groups[k]) groups[k] = [ item ];
+                else groups[k].push(item);
+                return groups;
+            }, {});
+        }
+        // 3. Convert data to easy-to-work-with formats
+        const entries = monthData.map(DateEntry);
+        const entriesByMonth = groupBy(
+            ({ date }) => date.format("MM.YYYY"),
+            entries
+        );
+        // Sorted list of EntryRanges
+        const entryGroups = Object
+            .values(entriesByMonth)
+            .map(EntryRange)
+            .sort(EntryRange.sorter);
+        
+        let finalData = entryGroups
+            .map(({ to, data }) => ({
+                date: to.format("MMMM YYYY"),
+                data: data,
+            }))
+        for (let i = 0; i < finalData.length; i++) {
+            newData.push({
+                name: finalData[i].date,
+                x: i,
+                y: finalData[i].data,
+                color: '#165686'
+            });
+        }
+        let that = this;
+        options.series[0].data = newData;
+        options.tooltip.formatter = function () {
+            return this.key + '<br /> Session Duration: ' + that.formatTime(this.y, false) + " Minutes";
+        };
+        this.setState({ data: finalData}, ()=>{
+            this.setState({
+                loading: false
+            })
+        });
+    }
+
+    chartViewToggle = (view) =>{
+        this.setState({
+            loading: true,
+            chartType:view,
+        });
+        options.chart.type = view;
+        setTimeout(function(){
+            this.setState({loading: false});
+            }.bind(this),10
+        );
+    }
+
     componentDidMount() {
-        this.getActiveNode();
+        this.getDailySessionDuration();
+        this.getActiveSessions();
+        this.getAvarageDuration();
     }
     render() {
-        const { loading, data } = this.state;
+        const { loading, data, activeSessionDuration, averageSessionDuration, chartType } = this.state;
+        
         return (
-            <div className="statschart-card"  id={this.props.id} ref={this.props.refrence}>
+            <div className="statschart-card" id={this.props.id} ref={this.props.refrence}>
                 <div className="statschart-card-inner">
                     <div className="stats-chart">
                         <div className="chart-head">
                             <h3>Average Session Duration</h3>
-                            <Radio.Group defaultValue="a" buttonStyle="solid">
-                                <Radio.Button onClick={()=>{this.getActiveNode("24h")}} value="a">daily</Radio.Button>
-                                <Radio.Button onClick={()=>{this.getActiveNode("168h")}} value="b">weekly</Radio.Button>
-                                <Radio.Button onClick={()=>{this.getActiveNode("720h")}} value="c">monthly</Radio.Button>
+                            <Radio.Group defaultValue="daily" buttonStyle="solid">
+                                <Radio.Button onClick={this.getDailySessionDuration} value="daily">daily</Radio.Button>
+                                <Radio.Button onClick={this.getWeeklySessionDuraion} value="weekly">weekly</Radio.Button>
+                                <Radio.Button onClick={this.getMonthlySessionDuration} value="monthly">monthly</Radio.Button>
                             </Radio.Group>
                         </div>
                         <div className={data===null ? "chart-wrap no-date": "chart-wrap"}>
                             <Spin spinning={loading} />
-                            {!data && 
+                            {(!data && loading) &&
                                 <div className="no-date">No data available</div>
                             }
                             {(!loading && data) &&
-                                <HighchartsReact
-                                    highcharts={Highcharts}
-                                    options={options}
-                                />
+                                <>
+                                    <Radio.Group defaultValue={chartType} className="ml-auto" buttonStyle="solid" size="small">
+                                        <Radio.Button onClick={()=>{this.chartViewToggle("area")}} value="area"><SvgIcon fill="#fff" name="line-chart" viewbox="0 0 512 512" /></Radio.Button>
+                                        <Radio.Button onClick={()=>{this.chartViewToggle("column")}} value="column"><SvgIcon fill="#fff" name="bar-chart" viewbox="0 0 24 24" /></Radio.Button>
+                                    </Radio.Group>
+                                    <HighchartsReact
+                                        highcharts={Highcharts}
+                                        options={options}
+                                    />
+                                </>
                             }
                         </div>  
                     </div>
                     <div className="stats-count">
                         <div className="count-card">
-                            <h4>56.12</h4>
-                            <p>Lifetime Avg. Duration (min)</p>
+                            <h4>{this.formatTime(activeSessionDuration, false)}</h4>
+                            <p>LIFETIME AVG. DURATION (Min)</p>
                         </div>
                         <div className="count-card">
-                            <h4>40.40</h4>
-                            <p>24Hr. Avg. Duration (min)</p>
+                            <h4>{this.formatTime(averageSessionDuration, false)}</h4>
+                            <p>24HR. AVG. DURATION (Min)</p>
                         </div>
                     </div>
                 </div>
