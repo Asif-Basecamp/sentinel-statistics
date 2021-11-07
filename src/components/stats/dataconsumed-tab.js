@@ -130,7 +130,7 @@ class DataConsumedTab extends Component {
         console.log(this.state.chartData)
     };
     componentDidMount() {
-        this.getActiveNode();
+        // this.getActiveNode();
     }
     render() {
         const { loading, chartData } = this.state;

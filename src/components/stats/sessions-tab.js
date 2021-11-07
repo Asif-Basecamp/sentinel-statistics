@@ -119,7 +119,7 @@ class SessionsTab extends Component {
         console.log(this.state.data)
     };
     componentDidMount() {
-        this.getSessionInfo();
+        // this.getSessionInfo();
     }
     render() {
         const { loading, data } = this.state;

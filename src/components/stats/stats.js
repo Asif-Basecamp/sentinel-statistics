@@ -1,6 +1,7 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { SvgIcon, Container } from '../common';
-import { Link } from 'react-scroll'
+import { Link } from 'react-scroll';
+import axios from 'axios';
 import "./stats.scss";
 import ActiveNodesTab from '../stats/activenodes-tab';
 import SessionsTab from '../stats/sessions-tab';
@@ -27,6 +28,18 @@ const TabId = [
 ];
 
 const StatsView = () => {
+    const [data, setData] = useState({});
+    const [loading, setLoading] = useState(true);
+    useEffect(() => {
+        axios.get(process.env.REACT_APP_BASE_URL_LIVE)
+          .then(function(response) {
+            setData(response.data);
+            setLoading(false)
+            console.log(response.data)
+          }).catch(function(error) {
+            console.log(error);
+          })
+      }, [loading]);
     return (
         <>
             <div className="stats-banner">
@@ -45,10 +58,14 @@ const StatsView = () => {
                             );
                         })}
                     </ul>
-                    <ActiveNodesTab id="ActiveNodesTab" />
-                    <SessionsTab id="SessionsTab" />
-                    <DataConsumedTab id="DataConsumedTab" />
-                    <AverageSessionDurationTab id="AverageSessionDurationTab" />
+                    {!loading && 
+                        <>
+                            <ActiveNodesTab id="ActiveNodesTab" data={data.nodes} />
+                            <SessionsTab id="SessionsTab" data={data.sessions} />
+                            <DataConsumedTab id="DataConsumedTab" data={data.bandwidth} />
+                            <AverageSessionDurationTab id="AverageSessionDurationTab" data={data.duration} />
+                        </>
+                    }
                 </Container>
             </div>
         </>
