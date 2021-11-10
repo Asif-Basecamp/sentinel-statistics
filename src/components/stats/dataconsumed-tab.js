@@ -14,7 +14,7 @@ let kb = 1024,
     tb = 1024*gb;
 let options = {
     chart: {
-        type: "area",
+        type: "column",
         backgroundColor: null,
         height: "420",
     },
@@ -70,7 +70,7 @@ let options = {
             style: {
                 fontSize: "10px",
                 fontWeight: "300",
-                color: "#b7b3b3",
+                color: "#fff",
             },
             formatter: function () {
                 var maxElement = this.axis.max;
@@ -95,7 +95,7 @@ let options = {
             style: {
                 fontSize: "10px",
                 fontWeight: "300",
-                color: "#b7b3b3",
+                color: "#fff",
             }
         },
     },
@@ -112,7 +112,7 @@ class DataConsumedTab extends Component {
         data: [],
         dataConsumed:null,
         totalDataConsumed:null,
-        chartType:"area",
+        chartType:"column",
         loading: true,
     };
     arryaTotal = (accumulator, a)=>{
@@ -194,7 +194,7 @@ class DataConsumedTab extends Component {
                 name: formattedDate,
                 x: i,
                 y: nodeData[i],
-                color: '#165686'
+                color: '#2a94e3'
             });
         }
         let that = this;
@@ -223,7 +223,7 @@ class DataConsumedTab extends Component {
             monthData.push({    
                 date: Object.keys(preData)[i],
                 data:nodeData[i],
-                color: '#165686'
+                color: '#2a94e3'
             });
         }
 
@@ -252,7 +252,7 @@ class DataConsumedTab extends Component {
                 name: this.ordinal_suffix_of(weekValue[1])+ ' week ' + weekValue[0],
                 x: i,
                 y: data,
-                color: '#165686'
+                color: '#2a94e3'
             });
         }
         let that = this;
@@ -340,7 +340,7 @@ class DataConsumedTab extends Component {
                 name: finalData[i].date,
                 x: i,
                 y: finalData[i].data,
-                color: '#165686'
+                color: '#2a94e3'
             });
         }
         let that = this;
@@ -396,8 +396,8 @@ class DataConsumedTab extends Component {
                             {(!loading && data) &&
                                 <>
                                     <Radio.Group defaultValue={chartType} className="ml-auto" buttonStyle="solid" size="small">
-                                        <Radio.Button onClick={()=>{this.chartViewToggle("area")}} value="area"><SvgIcon fill="#fff" name="line-chart" viewbox="0 0 512 512" /></Radio.Button>
                                         <Radio.Button onClick={()=>{this.chartViewToggle("column")}} value="column"><SvgIcon fill="#fff" name="bar-chart" viewbox="0 0 24 24" /></Radio.Button>
+                                        <Radio.Button onClick={()=>{this.chartViewToggle("area")}} value="area"><SvgIcon fill="#fff" name="line-chart" viewbox="0 0 512 512" /></Radio.Button>
                                     </Radio.Group>
                                     <HighchartsReact
                                         highcharts={Highcharts}
